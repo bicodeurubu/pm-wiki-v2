@@ -1,0 +1,26 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Obsidian workspace (local only — do not commit)
+.obsidian/workspace
+.obsidian/workspace.json
+.obsidian/plugins/
+!.obsidian/plugins/.gitkeep
+
+# Environment / secrets
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.bak
+
+# Large binary assets (commit intentionally if needed)
+*.mp3
+*.mp4
+*.wav
+*.mov
+
+# Raw / inbox assets too large for git
+inbox/assets/
