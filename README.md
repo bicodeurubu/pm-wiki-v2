@@ -264,3 +264,13 @@ When ingesting external content (customer feedback, support tickets, raw intervi
 | **OST** | Generated on demand | Embedded in structure |
 
 Both versions exist. Use the one that fits your team. Study the other to understand the tradeoffs.
+
+---
+
+## Attribution
+
+PM-Wiki v2 builds on **[PM-Wiki v1](https://github.com/bicodeurubu/pm-wiki)** by [Diogo Soares](https://github.com/bicodeurubu), which is a fork of **[llm-wikid](https://github.com/shannhk/llm-wikid)** by [Shann Holmberg](https://github.com/shannhk), which is itself inspired by the LLM Wiki pattern originally described by [Andrej Karpathy](https://github.com/karpathy).
+
+v2 reimagines the system architecture: replacing the command/agent/skill file hierarchy with a single `SIGNAL.md` instruction file, embedding the Opportunity Solution Tree in the folder structure itself, and reducing the schema from 15 frontmatter fields to 3.
+
+If you fork this repository, please maintain this attribution chain.
