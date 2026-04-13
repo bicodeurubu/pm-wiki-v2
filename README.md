@@ -6,19 +6,31 @@
 
 ## The difference from v1
 
-v1 organized knowledge. v2 *reasons* about it.
+PM-Wiki v1 and v2 are not sequential releases — they are different answers to the same problem, built on different philosophies.
 
-| v1 | v2 |
-|---|---|
-| 72 files before first content | 7 files before first content |
-| 13 command files to memorize | Speak naturally |
-| 15 frontmatter fields per page | 3 fields per page |
-| Skills, agents, commands as separate files | Everything in one SIGNAL.md |
-| OST generated on demand | OST is the folder structure |
-| Reactive — acts when you run commands | Proactive — surfaces gaps automatically |
-| Templates tell you what to fill | Examples show you what good looks like |
+**PM-Wiki v1 — structured control**
 
-The philosophy: **give the LLM principles, not procedures.** A good LLM doesn't need a 10-step script to process a user interview — it needs to understand what a product brain cares about.
+v1 is opinionated by design. It defines a strict schema (15 frontmatter fields), a full command system, separate agent personas, reusable skill modules, and explicit rules that govern every write. The LLM follows a procedure. Every connection is bidirectional and validated. Every change is propagated deterministically. The system behaves the same way regardless of which model or person is using it.
+
+v1 is the right choice when you want maximum traceability, predictable behavior at team scale, or an environment that requires auditability. More control means more setup — that's the trade.
+
+**PM-Wiki v2 — open inference**
+
+v2 gives the LLM principles, not procedures. One instruction file (`SIGNAL.md`). Three frontmatter fields. No commands — you talk. The folder structure *is* the OST. Extending the system means appending a section to a single file.
+
+v2 trusts that a capable LLM understands what a product brain cares about without being scripted. It's lighter, faster to start, and more creative. The tradeoff is that behavior is less deterministic — judgment is delegated to the model.
+
+| | v1 | v2 |
+|---|---|---|
+| **Philosophy** | Explicit procedures for the LLM | Principles, trust the LLM to infer |
+| **Schema** | 15 frontmatter fields, strict | 3 fields, loose |
+| **Interface** | 13 commands | Plain conversation |
+| **Agents / Skills** | Separate files, explicit personas | Embedded in one instruction file |
+| **Setup cost** | Higher — more files, more conventions | Lower — fill in one file and talk |
+| **Predictability** | High — rules enforced on every write | Medium — depends on LLM judgment |
+| **Best for** | Teams wanting process control and auditability | Individuals or teams wanting speed and flexibility |
+
+Neither version is better. Use whichever fits your context. Both are actively maintained.
 
 ---
 
@@ -255,15 +267,7 @@ When ingesting external content (customer feedback, support tickets, raw intervi
 
 ## Two versions, two philosophies
 
-| | v1 | v2 |
-|---|---|---|
-| **Mental model** | Filing cabinet | Thinking partner |
-| **Learning curve** | High — many files and conventions | Low — read SIGNAL.md, start talking |
-| **Best for** | Teams who want explicit process control | Teams who want to move fast with AI |
-| **Scales by** | Adding more files and commands | Adding sections to SIGNAL.md |
-| **OST** | Generated on demand | Embedded in structure |
-
-Both versions exist. Use the one that fits your team. Study the other to understand the tradeoffs.
+See [The difference from v1](#the-difference-from-v1) at the top of this document for the full comparison. The short version: v1 is more structured, more controlled, more files — built for teams that want explicit process. v2 is lighter, more open, relies more on LLM inference — built for teams that want to move fast and think out loud. Neither is better. They fit different contexts.
 
 ---
 
