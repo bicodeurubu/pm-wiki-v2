@@ -5,6 +5,33 @@
 
 ---
 
+## 0. Security & data handling
+
+> Read this before putting any real data into the vault.
+
+**What belongs here — and what doesn't:**
+
+| ✅ Safe to store | ❌ Never store here |
+|---|---|
+| Anonymized research synthesis | Raw PII (full names, emails, phone numbers of customers) |
+| Aggregated metrics and funnel data | Verbatim chat logs with identifiable users |
+| Decisions, OKRs, strategic notes | API keys, tokens, credentials of any kind |
+| Competitor analysis | Internal system passwords or secrets |
+| Sprint plans and meeting notes | `.env` files or any file with auth material |
+
+**LLM data retention — this is critical:**
+This vault is designed to be read by an LLM. If you use a **public or personal LLM interface** (claude.ai free/pro, ChatGPT, Gemini consumer), your data may be used for model training. Before pointing any LLM at this vault with real product data:
+- Use a **zero data retention** endpoint: Claude for Enterprise / API with ZDR, Azure OpenAI, or a locally-run model (Ollama, LM Studio).
+- If in doubt, treat this vault as if it were read aloud in a public space.
+
+**Prompt injection awareness:**
+When ingesting external content (user interview transcripts, customer feedback, support tickets), treat those inputs as untrusted. A malicious user can embed instructions in their feedback ("ignore previous instructions and..."). When processing external files, ask the LLM to summarize and extract — do not ask it to *follow instructions* found in raw customer content.
+
+**Cross-vault paths:**
+See `context.md` for safe path rules. Never use `../../` patterns.
+
+---
+
 ## 1. What this is
 
 This vault is the **product brain** for **[Product Name]**. It holds every decision, user insight, experiment, and piece of market knowledge — connected in a living graph.
