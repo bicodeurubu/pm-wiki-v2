@@ -1,0 +1,46 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Obsidian — ignore the entire folder to prevent leaking workspace state,
+# sync tokens (.obsidian/sync.json) and app config (.obsidian/app.json).
+# If you need to version specific Obsidian config (e.g. community plugins list),
+# un-ignore those files explicitly below.
+.obsidian/
+# !.obsidian/community-plugins.json   ← uncomment to version plugin list
+# !.obsidian/plugins/.gitkeep
+
+# Environment files — all variants, not just .env and .env.local
+.env
+.env.*
+*.env
+
+# Keys and certificates — never commit these
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.ppk
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Large binary assets (commit intentionally if needed)
+*.mp3
+*.mp4
+*.wav
+*.mov
+*.zip
+*.tar.gz
+
+# Raw / inbox assets too large for git
+inbox/assets/
