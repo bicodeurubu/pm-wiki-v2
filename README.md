@@ -269,7 +269,7 @@ Both versions exist. Use the one that fits your team. Study the other to underst
 
 ## Attribution
 
-PM-Wiki v2 builds on **[PM-Wiki v1](https://github.com/bicodeurubu/pm-wiki)** by [Diogo Soares](https://github.com/bicodeurubu), which is a fork of **[llm-wikid](https://github.com/shannhk/llm-wikid)** by [Shann Holmberg](https://github.com/shannhk), which is itself inspired by the LLM Wiki pattern originally described by [Andrej Karpathy](https://github.com/karpathy).
+PM-Wiki v2 builds on **[PM-Wiki v1](https://github.com/bicodeurubu/pm-wiki-v1)** by [Diogo Soares](https://github.com/bicodeurubu), which is a fork of **[llm-wikid](https://github.com/shannhk/llm-wikid)** by [Shann Holmberg](https://github.com/shannhk), which is itself inspired by the LLM Wiki pattern originally described by [Andrej Karpathy](https://github.com/karpathy).
 
 v2 reimagines the system architecture: replacing the command/agent/skill file hierarchy with a single `SIGNAL.md` instruction file, embedding the Opportunity Solution Tree in the folder structure itself, and reducing the schema from 15 frontmatter fields to 3.
 
