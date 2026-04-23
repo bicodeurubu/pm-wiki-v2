@@ -55,6 +55,17 @@ ops/             Operational cadence
   meetings/      Notes by type
 
 inbox/           Drop anything here — I decide what to do with it
+  interviews/    Raw interview notes or transcripts
+  clippings/     Web articles, market reports
+  data/          Analytics exports, CSV files, dashboard screenshots
+  competitor/    Screenshots, pricing pages, product tours
+  ideas/         Quick thoughts, Slack notes, voice memos
+
+meta/            System configuration
+  program.md     Autoresearch rules: sources, budget, confidence
+  dashboard.base Obsidian Bases: Recent / Low confidence / Unexplored / Stale
+
+hot.md           Session memory — auto-maintained, never edit manually
 _map.md          TLDR index — auto-maintained, never edit
 _log.md          Changelog — auto-maintained, never edit
 ```
@@ -69,19 +80,24 @@ PM team:  [names]
 
 ---
 
-## 2. Minimal schema
+## 2. Schema
 
-Every page needs exactly **3 frontmatter fields**:
+Every page needs exactly **5 frontmatter fields**:
 
 ```yaml
 ---
 type: outcome | opportunity | solution | experiment | decision | research | data | market | sprint | meeting
 status: draft | active | validated | invalidated | archived
 tldr: one sentence — what this page says
+confidence: high | medium | low | uncertain
+explored: false
 ---
 ```
 
-That's it. No dates, no stakeholder lists, no confidence ratings, no dependency arrays to manually maintain.
+**Field rules:**
+- `confidence` — set by the LLM based on evidence quality. The PM may change it after review.
+- `explored: false` — always set by the LLM when creating a page. **Only the PM sets `true`** after personally reviewing and validating the content.
+- `status: approved` on a `type: decision` makes it immutable — never edit the body, only create a superseding decision.
 
 **Everything else is expressed through `[[wikilinks]]` in the body.** Use them freely. They are the connective tissue of the brain.
 
@@ -96,7 +112,7 @@ That's it. No dates, no stakeholder lists, no confidence ratings, no dependency 
 | `research` | the `opportunity` it informs (if known) |
 | `data` | the `opportunity` or `solution` it relates to |
 
-No bidirectional frontmatter. The graph view and LLM traversal handle reverse connections automatically.
+No bidirectional frontmatter arrays. The graph view and LLM traversal handle reverse connections automatically.
 
 ---
 
@@ -112,6 +128,8 @@ These examples define quality. When in doubt, match this pattern.
 type: opportunity
 status: active
 tldr: Returning users abandon checkout at the address step — 23% drop-off, confirmed qualitatively and quantitatively
+confidence: high
+explored: false
 ---
 
 # Opportunity: Checkout Friction
@@ -126,6 +144,13 @@ Returning users completing purchases on mobile abandon at step 3 (address confir
 
 **Solutions exploring this:**
 - [[solutions/prd-checkout-v2]]
+
+## Counter-arguments
+The drop-off may be intentional abandonment (price comparison, saving for later) — not friction. Qualitative data is needed to distinguish the two.
+
+## Data gaps
+- No data on what % of droppers return and complete later
+- No segment breakdown by device age or OS version
 ```
 
 ---
@@ -136,6 +161,8 @@ Returning users completing purchases on mobile abandon at step 3 (address confir
 type: solution
 status: draft
 tldr: Simplify checkout for returning users by removing the address confirmation step when a saved address exists
+confidence: medium
+explored: false
 ---
 
 # PRD: Checkout V2 — Remove Address Confirmation
@@ -181,6 +208,8 @@ Skip address confirmation step automatically when the user has a saved address o
 type: experiment
 status: active
 tldr: A/B test removing address step for returning users — hypothesis: +5% conversion lift
+confidence: medium
+explored: false
 ---
 
 # Experiment: Address Step Removal A/B
@@ -210,6 +239,8 @@ tldr: A/B test removing address step for returning users — hypothesis: +5% con
 type: decision
 status: approved
 tldr: Remove address confirmation for returning users with saved addresses — reduces friction, low engineering risk, approved by Ana and Bruno
+confidence: high
+explored: false
 ---
 
 # Decision: Remove Address Confirmation Step
@@ -241,6 +272,8 @@ tldr: Remove address confirmation for returning users with saved addresses — r
 type: research
 status: active
 tldr: 5 returning users interviewed — all abandon checkout at address step, all have saved addresses, feel the step is redundant
+confidence: high
+explored: false
 ---
 
 # Interview Synthesis: Checkout Friction — Q1 2026
@@ -264,7 +297,13 @@ tldr: 5 returning users interviewed — all abandon checkout at address step, al
 **What did NOT confirm our hypotheses:**
 - P2 actually wants to see the address (anxiety about delivery). Segment: first-timer mentality despite purchase history.
 
-**Data gap:** No data on how many users have saved addresses. Needed to size the opportunity.
+## Counter-arguments
+P2's behavior (anxiety, wanting confirmation) may represent a meaningful segment. Removing the step entirely could introduce silent errors for users who changed address but forgot. A "confirm address" option should remain reachable.
+
+## Data gaps
+- Sample size: 5 is too small to quantify the P2-type segment
+- No data on how many users have saved addresses (needed to size the addressable population)
+- No A/B precedent — unclear whether removal helps or hurts first-timers in disguise
 ```
 
 ---
@@ -275,6 +314,8 @@ tldr: 5 returning users interviewed — all abandon checkout at address step, al
 type: data
 status: active
 tldr: 23% of returning users drop off at checkout step 3 (address) — highest point in funnel, Q1 2026
+confidence: high
+explored: false
 ---
 
 # Data: Checkout Funnel Drop-off — Q1 2026
@@ -327,12 +368,28 @@ Always report what's structurally missing. Format:
 • [solution-name] has no experiments planned
 • [experiment-name] has no metric defined
 • [data-insight-name] freshness window closes in 12 days — 2 solutions depend on it
+• [page-name] has confidence: uncertain — review needed
+• [page-name] has explored: false for 30+ days
 ```
 
 If no gaps: `✅ No structural gaps detected.`
 
+### Contradictions — [!contradiction] callouts
+When two pages contain conflicting evidence, facts, or conclusions, use an Obsidian-style callout block — **not** buried inline text:
+
+```markdown
+> [!contradiction] Conflicts with [[other-page]]
+> [[this-page]] says X. [[other-page]] says Y. Review both before relying on either.
+> Added: YYYY-MM-DD
+```
+
+This makes contradictions **scannable** in Obsidian's reading view and surfaces them in the dashboard's "Low confidence" filter. Never silently resolve contradictions — preserve them and flag them.
+
 ### Decisions are immutable when approved
 When a page has `type: decision` and `status: approved`, never edit its body. If the decision needs to change, create a new decision that supersedes it and links back.
+
+### Freshness monitoring
+When a `data` page is within 14 days of its freshness window closing, surface it in the gap check. When it expires, flag all solutions and decisions that depend on it.
 
 ### Git
 Commit format: `type(area): description`
@@ -344,7 +401,72 @@ Never `git push` — that's always the PM's decision.
 
 ---
 
-## 5. Behavioral discipline
+## 5. Bias check — required on concept and synthesis pages
+
+Every `type: research`, `type: market`, and any cross-cutting synthesis page **must** include these two sections before the page is considered complete:
+
+```markdown
+## Counter-arguments
+[Opposing viewpoints, evidence that contradicts the main claims, pushback from stakeholders]
+
+## Data gaps
+[What's missing, what's unknown, what needs more sources before this can be relied on]
+```
+
+These sections are not optional. If you create a page without them, mark `confidence: uncertain` until they are filled.
+
+---
+
+## 6. Session memory — hot.md
+
+`hot.md` is the vault's **working memory between sessions**. It is a single file that summarizes what was happening at the end of the last session — what was being worked on, what's unresolved, what to pick up next.
+
+**How it works:**
+- At the **start of every session**, read `hot.md` before anything else. Inject its contents as prior context.
+- At the **end of every session** (Stop hook), a background script rewrites `hot.md` with a compact summary of what happened:
+  - Pages created or updated
+  - Open decisions or unresolved questions
+  - What's next
+
+**Rule:** Never delete `hot.md`. Never edit it manually. If it's empty or stale, note that to the PM.
+
+See `hooks/update-hot-cache.sh` for the Stop hook implementation.
+
+---
+
+## 7. Built-in workflows
+
+These are available without typing a command. Just say it naturally.
+
+### /save [slug]
+**Turns any conversation into a filed wiki note.**
+
+When the PM says *"save this conversation"* or *"save as [slug]"*, I:
+1. Identify the content type from the conversation (decision, research synthesis, meeting notes, etc.)
+2. Create a wiki page in the appropriate folder with the correct frontmatter
+3. Link it to existing related pages
+4. Update `_map.md` and `_log.md`
+5. Commit to git
+
+Use this to capture decisions made in chat, synthesis from a brainstorm, or notes from a quick ideation.
+
+### /autoresearch [topic]
+**Multi-round web search that builds connected wiki pages.**
+
+When the PM says *"autoresearch [topic]"*, I:
+1. Read `meta/program.md` for the research budget, source rules, and confidence criteria
+2. Run a first round of web search — identify top sources
+3. Fetch and synthesize each source into a `market` or `research` page
+4. Cross-reference new findings against existing vault pages — flag contradictions with `[!contradiction]` callouts
+5. Create a synthesis page connecting all sources
+6. Run a second round targeting gaps from step 4
+7. Report final summary: pages created, contradictions found, open gaps, confidence level
+
+Budget is defined in `meta/program.md`. Default: 3 rounds, 5 sources max, stop when confidence reaches `medium` or higher.
+
+---
+
+## 8. Behavioral discipline
 
 *Adapted from Andrej Karpathy's LLM behavioral guidelines — recontextualized for product knowledge management.*
 
@@ -353,7 +475,6 @@ LLMs have specific failure modes in knowledge work: they hallucinate connections
 ---
 
 ### Principle 1 — Declare before acting
-*(Think Before Coding → Think Before Creating)*
 
 Before creating any page or connection, state out loud what you understood and what you plan to do. If the input is ambiguous, name the ambiguity and ask. Never guess silently.
 
@@ -368,35 +489,25 @@ Before creating any page or connection, state out loud what you understood and w
 ---
 
 ### Principle 2 — One page, one truth
-*(Simplicity First → Minimum Viable Page)*
 
 One research page per interview. One opportunity per confirmed user need. One data page per insight. Don't pre-create pages for things not yet in evidence. Don't create structure speculatively.
 
 Ask yourself: "Is there actual evidence for this page, or am I filling in what *seems* logical?" If the latter — stop. Flag the gap instead of inventing content.
-
-**Bad:**
-> *[One interview note → research page + persona page + opportunity page + JTBD page + synthesis page]*
-
-**Good:**
-> *[One interview note → one research page with wikilinks to existing opportunity, or a new opportunity stub if none exists]*
 
 If you made 5 pages and 2 would cover it, say so and ask whether to consolidate.
 
 ---
 
 ### Principle 3 — Evidence is sacred
-*(Surgical Changes → Evidence Immutability)*
 
 Primary evidence — verbatim quotes, data snapshots, timestamps, exact numbers — is **never rewritten, paraphrased, or "improved."** It is an archaeological record.
 
-When updating a page, touch only what the new information requires. If existing interpretation seems wrong, flag it — don't overwrite it silently.
+When updating a page, touch only what the new information requires. If existing interpretation seems wrong, flag it:
 
 ```
 > ⚠️ Note added YYYY-MM-DD: this interpretation may conflict with
 > [[intelligence/data/new-insight]] — review before relying on this section
 ```
-
-**The test:** Every changed line must trace directly to new information that arrived. If you're editing a line that wasn't touched by new input — stop.
 
 **Specifically never do:**
 - Rephrase a user quote to make it "cleaner"
@@ -404,14 +515,13 @@ When updating a page, touch only what the new information requires. If existing 
 - Remove a "What did NOT confirm our hypothesis" section because it feels awkward
 - Tidy up a decision's "Options considered" after it's approved
 
-Contradictions between evidence are valuable signal — preserve them, flag them, never resolve them silently.
+Contradictions between evidence are valuable signal — preserve them with `[!contradiction]` callouts, never resolve them silently.
 
 ---
 
 ### Principle 4 — Connect and verify
-*(Goal-Driven Execution → OST-Grounded Completion)*
 
-Every task ends with a verification checkpoint, not when the LLM decides it feels done.
+Every task ends with a verification checkpoint.
 
 **"I created a page" is not done.**
 
@@ -434,18 +544,6 @@ Completion statement:
  ⚡ Gap check: solution has no experiments planned yet."
 ```
 
-For multi-step tasks, state the plan with verifiable checkpoints before starting:
-
-```
-Plan for processing 3 interview files:
-1. interview-1.md → research page → verify: quote present, opportunity linked
-2. interview-2.md → research page → verify: quote present, opportunity linked or created
-3. interview-3.md → research page → verify: same
-4. After all three → gap check → report if opportunity has sufficient evidence to score
-```
-
-Strong completion criteria let the LLM loop independently. Weak criteria ("process these files") require constant clarification and produce inconsistent results.
-
 ---
 
 ### The self-check (run before finishing any response)
@@ -461,7 +559,7 @@ If any answer is "no" — fix it before responding.
 
 ---
 
-## 6. What you can ask me
+## 9. What you can ask me
 
 Speak naturally. There are no commands to memorize.
 
@@ -469,19 +567,23 @@ Speak naturally. There are no commands to memorize.
 - *"Here are my notes from 3 user interviews about checkout..."* → I create research pages, detect connections, update the map
 - *"Drop a file in inbox/"* → I classify, create the right page type, build connections
 - *"We just decided to delay guest checkout to Q3"* → I create a decision record and link it to affected solutions
+- *"Save this conversation as [slug]"* → `/save` workflow — turns the conversation into a wiki page
 
 ### Understand
 - *"Show me the OST for [outcome]"* → Mermaid tree traversed from the graph
 - *"What's the evidence behind [solution or decision]?"* → upstream trace with all sources
 - *"What would change if we modify [decision]?"* → downstream impact map
 - *"What happened this week?"* → summary from `_log.md` and recent git commits
+- *"What was I working on last session?"* → reads `hot.md`
 
 ### Assess quality
 - *"Review my PRD for [solution]"* → checks: linked opportunity? evidence base? experiments planned? metric defined? open questions addressed?
-- *"Health check the vault"* → gaps, stale data, orphan pages, broken links
+- *"Health check the vault"* → gaps, stale data, orphan pages, broken links, low-confidence pages
 - *"Which opportunities have the strongest evidence?"* → score across all active opportunities
+- *"Show me what's unexplored"* → pages with `explored: false` sorted by age
 
 ### Synthesize
+- *"Autoresearch [topic]"* → `/autoresearch` workflow — multi-round web research built into the vault
 - *"What should we focus on next quarter?"* → evidence synthesis across opportunities, gaps, and validated experiments
 - *"Prepare me for my review meeting on [topic]"* → relevant pages + gaps + decision map + open questions
 - *"What does our research say about [topic]?"* → synthesis across all research pages
@@ -491,11 +593,11 @@ Speak naturally. There are no commands to memorize.
 
 ---
 
-## 6. Extending this system
+## 10. Extending this system
 
-No new files needed. No skill templates. No command definitions.
+No new files needed. No skill templates.
 
-To add a custom behavior, **append a section to this file**:
+To add a custom behavior, **append a `## Custom:` section to this file**:
 
 ```markdown
 ## Custom: [Behavior Name]
@@ -508,12 +610,12 @@ To add a custom behavior, **append a section to this file**:
 Examples of custom behaviors teams add:
 - **DACI format:** "When creating a decision, always structure the options using DACI (Driver, Approver, Contributor, Informed)"
 - **Shape Up pitch:** "When asked to write a pitch for [opportunity], format it as a Shape Up pitch with appetite, problem, solution, and rabbit holes"
-- **Weekly digest:** "When asked 'what happened this week?', read _log.md for the past 7 days and format as a PM standup update with: shipped, in progress, decisions made, gaps to address"
+- **Weekly digest:** "When asked 'what happened this week?', read _log.md for the past 7 days and format as a PM standup: shipped, in progress, decisions made, gaps"
 - **Stakeholder email:** "When I say 'write a stakeholder update for [topic]', draft an email from the relevant sprint + decisions + experiment results"
 
 ---
 
-## 7. Cross-vault references
+## 11. Cross-vault references
 
 Edit `context.md` to reference other product vaults:
 
@@ -528,18 +630,6 @@ Edit `context.md` to reference other product vaults:
 ```
 
 Cross-vault content is always read-only — never copied into this vault.
-
----
-
-## 8. Freshness
-
-Data insights go stale. When a `data` page is created, note a freshness window in the body:
-
-```
-**Freshness:** Valid until YYYY-MM-DD (re-pull quarterly / monthly / as needed)
-```
-
-I monitor this. When a data page is within 14 days of its freshness window, I surface it in the gap check. When it expires, I flag all solutions and decisions that depend on it.
 
 ---
 

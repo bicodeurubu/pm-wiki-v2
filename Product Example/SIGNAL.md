@@ -42,19 +42,23 @@ PM team:  Ana Souza, Bruno Lima
 
 ---
 
-## 2. Minimal schema
+## 2. Schema
 
-Every page needs exactly **3 frontmatter fields**:
+Every page needs exactly **5 frontmatter fields**:
 
 ```yaml
 ---
 type: outcome | opportunity | solution | experiment | decision | research | data | market | sprint | meeting
 status: draft | active | validated | invalidated | archived
 tldr: one sentence — what this page says
+confidence: high | medium | low | uncertain
+explored: false
 ---
 ```
 
-That's it. No dates, no stakeholder lists, no confidence ratings, no dependency arrays to manually maintain.
+**Field rules:**
+- `confidence` — set by the LLM based on evidence quality. The PM may adjust after review.
+- `explored: false` — always set by the LLM. **Only the PM sets `true`** after personally validating the content.
 
 **Everything else is expressed through `[[wikilinks]]` in the body.** Use them freely. They are the connective tissue of the brain.
 

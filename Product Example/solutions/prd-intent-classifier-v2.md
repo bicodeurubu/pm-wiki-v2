@@ -1,6 +1,8 @@
 ---
 type: solution
 status: draft
+confidence: medium
+explored: false
 tldr: Replace rule-based intent classifier with a fine-tuned LLM classifier trained on Acme's resolved tickets — targeting 38% → ≤10% misclassification rate
 ---
 

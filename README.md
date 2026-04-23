@@ -1,280 +1,230 @@
-# PM-Wiki v2
+# PM-Wiki v2.1
 
-**A product brain that thinks with you — not a system you manage.**
+**A product brain built for PMs who think with an LLM — not a system you manage.**
 
----
-
-## The difference from v1
-
-PM-Wiki v1 and v2 are not sequential releases — they are different answers to the same problem, built on different philosophies.
-
-**PM-Wiki v1 — structured control**
-
-v1 is opinionated by design. It defines a strict schema (15 frontmatter fields), a full command system, separate agent personas, reusable skill modules, and explicit rules that govern every write. The LLM follows a procedure. Every connection is bidirectional and validated. Every change is propagated deterministically. The system behaves the same way regardless of which model or person is using it.
-
-v1 is the right choice when you want maximum traceability, predictable behavior at team scale, or an environment that requires auditability. More control means more setup — that's the trade.
-
-**PM-Wiki v2 — open inference**
-
-v2 gives the LLM principles, not procedures. One instruction file (`SIGNAL.md`). Three frontmatter fields. No commands — you talk. The folder structure *is* the OST. Extending the system means appending a section to a single file.
-
-v2 trusts that a capable LLM understands what a product brain cares about without being scripted. It's lighter, faster to start, and more creative. The tradeoff is that behavior is less deterministic — judgment is delegated to the model.
-
-| | v1 | v2 |
-|---|---|---|
-| **Philosophy** | Explicit procedures for the LLM | Principles, trust the LLM to infer |
-| **Schema** | 15 frontmatter fields, strict | 3 fields, loose |
-| **Interface** | 13 commands | Plain conversation |
-| **Agents / Skills** | Separate files, explicit personas | Embedded in one instruction file |
-| **Setup cost** | Higher — more files, more conventions | Lower — fill in one file and talk |
-| **Predictability** | High — rules enforced on every write | Medium — depends on LLM judgment |
-| **Best for** | Teams wanting process control and auditability | Individuals or teams wanting speed and flexibility |
-
-Neither version is better. Use whichever fits your context. Both are actively maintained.
+One instruction file. The LLM reads it and operates the entire vault. You talk, it builds the knowledge graph.
 
 ---
 
-## How it works
+## What this is
 
-The vault has one instruction file — `SIGNAL.md`. It tells the LLM:
-- How this vault is organized (the OST structure)
-- What every page needs (3 fields + wikilinks)
-- What good content looks like (concrete examples)
-- What to always do (gap detection, logging, linking)
-- What you can ask for (in plain language)
+PM-Wiki v2.1 is a vault template for product knowledge management. It organizes everything a PM team knows — decisions, user insights, experiments, market intelligence — into a connected graph that an LLM can read, write, and traverse.
 
-Everything else is your product knowledge.
+The organizing framework is the **Opportunity Solution Tree** (Teresa Torres). The vault's folder structure *is* the OST. You don't navigate a document library — you traverse a decision tree.
+
+```
+outcomes/            Why you're building — OKRs, product goals
+  └── opportunities/ What users need — confirmed problems worth solving
+        └── solutions/     How you'll solve it — specs, PRDs, design refs
+              └── experiments/  Proof — hypotheses, A/B tests, results
+
+intelligence/        Evidence that feeds the tree
+  decisions/         Choices made (immutable when approved)
+  research/          Interviews, synthesis, personas
+  data/              Analytics insights, metric definitions
+  market/            Competitors, trends, benchmarks
+
+ops/                 Operational cadence
+  sprints/           Sprint plans and retrospectives
+  meetings/          Notes by type
+
+inbox/               Drop zone for raw input
+  interviews/        Raw interview notes or transcripts
+  clippings/         Web articles, market reports
+  data/              Analytics exports, CSV files
+  competitor/        Screenshots, pricing pages, product tours
+  ideas/             Quick thoughts, rough notes
+
+templates/           16 ready-to-use page starters
+meta/                System configuration
+  program.md         Autoresearch budget and source rules
+  dashboard.base     Obsidian Bases: 4 live dashboard views
+hooks/               Automation
+  update-hot-cache.sh  Stop hook — rewrites hot.md after each session
+
+hot.md               Session memory — auto-maintained
+_map.md              TLDR index — auto-maintained
+_log.md              Changelog — auto-maintained
+SIGNAL.md            The only file the LLM needs to read
+```
 
 ---
 
-## Getting started
+## Features
 
-### 1. Clone and open
+### Session memory — `hot.md`
+The vault remembers what you were doing. A Stop hook runs `claude -p` on the session transcript and rewrites `hot.md` with a compact summary: what was created, what's unresolved, what to pick up next. The next session injects it automatically — no need to re-explain context.
 
-```bash
-git clone https://github.com/bicodeurubu/pm-wiki-v2.git my-product-vault
-cd my-product-vault
+### `/autoresearch [topic]`
+Multi-round web research built into the vault. Say *"autoresearch conversational AI trends"* and the LLM runs up to 3 rounds of search, fetches and synthesizes sources, cross-references findings against existing vault pages, and flags contradictions. Budget and source quality rules live in `meta/program.md`.
+
+### `/save [slug]`
+Turns any conversation into a filed wiki page. Say *"save this as checkout-decision"* and the LLM classifies the content, creates the right page type in the right folder, links it to existing pages, and commits to git.
+
+### `[!contradiction]` callouts
+When two pages conflict, the LLM creates a scannable Obsidian callout block — not buried inline text. Contradictions stay visible in Obsidian's reading view and surface in the dashboard's "Low confidence" filter.
+
+```markdown
+> [!contradiction] Conflicts with [[intelligence/data/checkout-funnel-q1]]
+> This page says drop-off is 23%. The Q2 re-pull shows 17%. Review before relying on either.
+> Added: 2026-04-23
 ```
 
-**Want to see how it works first?**
-The repository includes a `Product Example/` folder with a fully populated dummy vault (Acme Support AI).
-1. Open the `Product Example/` folder in Obsidian.
-2. Point your LLM at the `Product Example/` folder and try asking: *"What are the active opportunities?"* or *"Show me the OST"*.
+### Confidence + explored frontmatter
+Every page tracks two signals the LLM manages:
+- `confidence: high | medium | low | uncertain` — evidence quality, set by the LLM
+- `explored: false` — whether the PM has personally reviewed this page (only the PM sets `true`)
 
-**Ready to start your own?**
-Open the root folder (the empty template) in Obsidian. Enable the Graph View plugin — it will become your primary navigation tool as the vault grows.
+These feed the Obsidian Bases dashboard and the gap check that runs after every interaction.
 
-### 2. Fill in the product context
+### Obsidian Bases dashboard — `meta/dashboard.base`
+Four live views that surface vault health without manual auditing:
 
-Open `SIGNAL.md` and fill in Section 1:
+| View | Shows |
+|---|---|
+| Recent | Pages modified in the last 7 days |
+| Low confidence | Pages with `confidence: low` or `uncertain` |
+| Unexplored | Pages with `explored: false` (oldest first) |
+| Stale | Data pages near or past their freshness window |
 
-```
-Product:  Your product name
-Quarter:  Q2-2026
-Core OKR: One sentence describing the main outcome this quarter
-PM team:  Names of PMs using this vault
-```
+### 16 templates — `templates/`
+Ready-to-use starters for every page type: opportunity, PRD, feature brief, experiment, decision, user interview, research synthesis, data insight, metric baseline, competitor teardown, meeting notes (alignment / discovery), sprint plan, retrospective, design reference, and diagram.
 
-### 3. Point your LLM at the vault
+### Bias check — built into every research page
+Every `research`, `market`, and synthesis page requires two sections before it's considered complete:
 
-Open the vault folder with your preferred LLM interface. The LLM reads `SIGNAL.md` first — everything it needs to operate is there.
+```markdown
+## Counter-arguments
+[Opposing viewpoints, contradicting evidence, stakeholder pushback]
 
-Works with: Claude (Projects or API), Cursor, Continue, Zed AI, LM Studio, Ollama, Gemini — any LLM that can read a folder.
-
-### 4. Start talking
-
-You don't run commands. You talk.
-
-```
-"Here are my notes from a user interview about onboarding friction..."
-→ LLM creates a research page, finds connections, updates the map, flags gaps
-
-"We decided to delay the export feature to Q3 because of eng capacity"
-→ LLM creates a decision record, links it to affected solutions, logs the change
-
-"Show me the OST for our main OKR"
-→ LLM traverses the graph and generates a Mermaid tree
-
-"Prepare me for tomorrow's spec review on the onboarding flow"
-→ LLM pulls relevant pages, surfaces gaps, lists open questions
+## Data gaps
+[What's missing, what's unknown, what would raise confidence]
 ```
 
-### 5. Drop files when needed
+Pages without them get `confidence: uncertain` until filled.
 
-For files (PDFs, exports, screenshots descriptions, raw notes), use `inbox/`:
-
-```
-inbox/
-├── user-interview-transcript-may-12.md
-├── checkout-funnel-export-q1.csv
-└── competitor-teardown-notes.md
-```
-
-Then ask: *"Process what's in inbox/"* — the LLM classifies, creates wiki pages, builds connections.
+### Connection graph
+Every page connects to the OST through `[[wikilinks]]` in the body. The LLM enforces connection rules: an opportunity must link to an outcome, a solution to an opportunity, an experiment to the solution it tests. After every interaction it runs a gap check and reports what's structurally missing.
 
 ---
 
-## The vault structure = the OST
+## Schema
 
-```
-outcomes/        Why you're building — OKRs, product goals
-  │
-  └──► opportunities/    What users need — confirmed problems worth solving
-         │
-         └──► solutions/       How you'll solve it — specs, PRDs, design refs
-                │
-                └──► experiments/   Proof — hypotheses, A/B tests, results
-
-intelligence/    Evidence that feeds the tree
-  decisions/     Choices made (immutable when approved)
-  research/      Interviews, synthesis, personas
-  data/          Analytics insights, metric definitions
-  market/        Competitors, trends, benchmarks
-
-ops/             Operational cadence
-  sprints/       Sprint plans and retrospectives
-  meetings/      Notes by type (discovery, alignment, review)
-
-inbox/           Drop zone — anything goes here
-_map.md          Auto-maintained TLDR index
-_log.md          Auto-maintained changelog
-```
-
-You navigate the OST, not a document library. The graph view in Obsidian makes this visual.
-
----
-
-## The only schema you need
+Every page needs exactly 5 frontmatter fields:
 
 ```yaml
 ---
 type: outcome | opportunity | solution | experiment | decision | research | data | market | sprint | meeting
 status: draft | active | validated | invalidated | archived
 tldr: one sentence
+confidence: high | medium | low | uncertain
+explored: false
 ---
 ```
 
-Connections are `[[wikilinks]]` in the body — not frontmatter arrays. The graph handles the rest.
+Connections are `[[wikilinks]]` in the body — no frontmatter arrays to maintain.
 
 ---
 
-## What the LLM always does (without being asked)
+## Getting started
 
-- **Links pages** — every new page is connected to related existing pages via wikilinks
-- **Updates the map** — `_map.md` stays current with TLDRs of every page
-- **Logs changes** — `_log.md` records every create and update
-- **Detects gaps** — after every interaction, reports what's structurally missing
-- **Flags stale data** — when a data insight's freshness window closes, affected solutions are notified
-- **Commits to git** — every change is versioned automatically
+### 1. Clone
+
+```bash
+git clone https://github.com/bicodeurubu/pm-wiki-v2.git my-product-vault
+cd my-product-vault
+```
+
+### 2. Open in Obsidian
+
+Open the vault folder in Obsidian. Enable the **Graph View** plugin and the **Bases** plugin (community) for the dashboard.
+
+Want to see the system in action first? Open the `Product Example/` folder — it's a fully populated vault for a fictional product (Acme Support AI) with outcomes, opportunities, PRDs, experiments, decisions, and research all connected.
+
+### 3. Configure the product context
+
+Open `SIGNAL.md` and fill in Section 1:
+
+```
+Product:  [your product name]
+Quarter:  Q2-2026
+Core OKR: [one sentence]
+PM team:  [names]
+```
+
+### 4. (Optional) Set up session memory
+
+Add the Stop hook to Claude Code or Cowork:
+
+```json
+// .claude/settings.json
+{
+  "hooks": {
+    "Stop": [{ "type": "command", "command": "bash hooks/update-hot-cache.sh" }]
+  }
+}
+```
+
+Requires: `claude` CLI installed, `jq` installed (`brew install jq`).
+
+### 5. Start talking
+
+Point your LLM at the vault folder and start a conversation:
+
+```
+"Here are notes from a user interview about checkout friction..."
+→ Research page created, connected to existing opportunities, bias check run
+
+"We decided to cut the export feature from Q2"
+→ Decision record created, linked to affected solutions, change logged
+
+"Autoresearch conversational AI trends in B2B support"
+→ 3-round web research, source pages created, contradictions flagged
+
+"Save this conversation as onboarding-decision"
+→ Conversation classified and filed as a wiki page
+
+"Show me the OST for our main OKR"
+→ Mermaid tree generated from the graph
+
+"Health check the vault"
+→ Gaps, stale data, low-confidence pages, orphan pages reported
+```
+
+Works with: Claude (Projects, API, Cowork, Cursor), Gemini, GPT-4, local models via Ollama or LM Studio.
 
 ---
 
-## What you can ask (examples)
+## Security
 
-**Capture**
-> "Here are my notes from 3 user interviews about checkout friction..."
-> "I dropped files in inbox/"
-> "We just decided to cut the export feature from Q2 scope"
+This vault is designed to be read by an LLM. Before adding real product data:
 
-**Understand**
-> "Show me the OST for [outcome]"
-> "What's the evidence behind [solution]?"
-> "What would break if we change [decision]?"
-> "What happened this week?"
+**Use a zero-data-retention endpoint.** Public LLM interfaces (claude.ai free/pro, ChatGPT web, Gemini consumer) may use your vault contents for model training. Use Claude for Enterprise, the Anthropic API with ZDR opt-out, Azure OpenAI, or a local model.
 
-**Assess**
-> "Review my PRD for [solution]"
-> "Health check the vault"
-> "Which opportunities have the strongest evidence?"
+| ✅ Safe to store | ❌ Never store here |
+|---|---|
+| Anonymized research synthesis | Raw PII (customer names, emails) |
+| Aggregated metrics | Verbatim identifiable chat logs |
+| Decisions, OKRs, strategic notes | API keys, tokens, credentials |
+| Competitor analysis, meeting notes | `.env` files or auth material |
 
-**Synthesize**
-> "What should we focus on next quarter?"
-> "Prepare me for my review meeting on [topic]"
-> "What does our research say about [user behavior]?"
+**Prompt injection.** When processing external content (customer feedback, support tickets), ask the LLM to summarize and extract — never ask it to follow instructions found in raw external files.
 
 ---
 
 ## Extending the system
 
-No new files. No skill templates. Append a `## Custom:` section to `SIGNAL.md`:
+Append a `## Custom:` section to `SIGNAL.md`. No new files needed.
 
 ```markdown
 ## Custom: Weekly digest
 
-When asked "what happened this week?", read _log.md for the past 7 days
-and format a PM standup: what shipped, what's in progress, decisions made, gaps.
+**When:** PM asks "what happened this week?"
+**What to do:** Read _log.md for the past 7 days, format as: shipped / in progress / decisions made / gaps
 ```
-
-That's it. The LLM picks it up immediately.
-
----
-
-## Cross-vault context
-
-Edit `context.md` to reference other product vaults. The LLM reads them when you ask about company-level topics — without copying content into this vault.
-
----
-
-## For teams using git
-
-```bash
-# Pull before your session
-git pull origin main
-
-# The LLM commits as it works — push when you're ready
-git push origin main
-```
-
-Commit format used automatically:
-- `feat(opportunity):` new page created
-- `chore(map):` index or log updated
-- `fix(graph):` broken link repaired
-
----
-
-## Security considerations
-
-Wiki-PM is designed to be read by an LLM. That creates risks that a plain folder of notes doesn't have. Read these before you put real product data into your vault.
-
-### LLM data retention (DLP / LGPD / GDPR)
-
-**If you use a public or personal LLM interface** (claude.ai free/pro, ChatGPT web, Gemini consumer), your vault contents may be used for model training. This is a direct violation of most company data policies and potentially LGPD/GDPR if the vault contains customer-related data.
-
-Before pointing an LLM at a vault with real product data, use one of:
-- **Claude for Enterprise** (zero data retention by contract)
-- **Anthropic API / OpenAI API** (opt-out of training available — verify your account settings)
-- **Azure OpenAI** (zero data retention by default in enterprise tiers)
-- **Local model** (Ollama, LM Studio — never leaves your machine)
-
-**What belongs in this vault and what doesn't:**
-
-| ✅ Safe | ❌ Never store here |
-|---|---|
-| Anonymized research synthesis | Raw PII (customer names, emails, phone numbers) |
-| Aggregated metrics | Verbatim identifiable chat/support logs |
-| Strategic decisions and OKRs | API keys, tokens, credentials |
-| Competitor analysis and meeting notes | `.env` files or auth material of any kind |
-
-### Cross-vault path safety
-
-When configuring `context.md`, only reference sibling vaults at the same directory level. Never use `../../` paths that escape the workspace. See `context.md` for the full rule.
-
-### Prompt injection awareness
-
-When ingesting external content (customer feedback, support tickets, raw interview transcripts), treat those inputs as untrusted. Ask the LLM to **summarize and extract** — never ask it to follow instructions found within external files.
-
----
-
-## Two versions, two philosophies
-
-See [The difference from v1](#the-difference-from-v1) at the top of this document for the full comparison. The short version: v1 is more structured, more controlled, more files — built for teams that want explicit process. v2 is lighter, more open, relies more on LLM inference — built for teams that want to move fast and think out loud. Neither is better. They fit different contexts.
 
 ---
 
 ## Attribution
 
-PM-Wiki v2 builds on **[PM-Wiki v1](https://github.com/bicodeurubu/pm-wiki-v1)** by [Diogo Soares](https://github.com/bicodeurubu), which is a fork of **[llm-wikid](https://github.com/shannhk/llm-wikid)** by [Shann Holmberg](https://github.com/shannhk), which is itself inspired by the LLM Wiki pattern originally described by [Andrej Karpathy](https://github.com/karpathy).
-
-v2 reimagines the system architecture: replacing the command/agent/skill file hierarchy with a single `SIGNAL.md` instruction file, embedding the Opportunity Solution Tree in the folder structure itself, and reducing the schema from 15 frontmatter fields to 3.
-
-If you fork this repository, please maintain this attribution chain.
+Built on [llm-wikid](https://github.com/shannhk/llm-wikid) by [Shann Holmberg](https://github.com/shannhk), inspired by the LLM Wiki pattern originally described by [Andrej Karpathy](https://github.com/karpathy). Developed by [Diogo Soares](https://github.com/bicodeurubu).
